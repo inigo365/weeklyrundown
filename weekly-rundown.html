@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Weekly Rundown">
+<title>Weekly Rundown — Big Sky</title>
+<style>
+  :root{
+    --ink:#0a0a0a;
+    --paper:#fafafa;
+    --card:#ffffff;
+    --line:#e4e4e4;
+    --muted:#8a8a8a;
+    --accent:#0a0a0a;
+    --danger:#c4453a;
+    --ok:#1f8a4c;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;background:var(--paper);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;}
+  body{padding-bottom:60px;}
+  header{
+    position:sticky;top:0;z-index:10;background:var(--ink);color:#fff;
+    padding:18px 20px calc(14px + env(safe-area-inset-top,0px));
+    padding-top:calc(18px + env(safe-area-inset-top,0px));
+  }
+  header h1{margin:0;font-size:19px;font-weight:800;letter-spacing:.2px;}
+  header p{margin:2px 0 0;font-size:12.5px;color:#c9c9c9;}
+  main{padding:16px;max-width:640px;margin:0 auto;}
+  .section{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    margin-bottom:16px;overflow:hidden;
+  }
+  .section-head{
+    padding:14px 16px;display:flex;align-items:center;justify-content:space-between;
+    border-bottom:1px solid var(--line);
+  }
+  .section-head h2{margin:0;font-size:15px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;}
+  .count{font-size:12px;color:var(--muted);font-weight:600;}
+  .items{list-style:none;margin:0;padding:0;}
+  .items li{
+    display:flex;align-items:flex-start;gap:10px;padding:12px 16px;
+    border-bottom:1px solid var(--line);font-size:15px;line-height:1.4;
+  }
+  .items li:last-child{border-bottom:none;}
+  .items li .bullet{color:var(--muted);flex-shrink:0;margin-top:1px;}
+  .items li .txt{flex:1;word-break:break-word;}
+  .items li button{
+    border:none;background:none;color:var(--danger);font-size:13px;font-weight:700;
+    padding:2px 4px;cursor:pointer;flex-shrink:0;
+  }
+  .empty{padding:16px;color:var(--muted);font-size:13.5px;font-style:italic;}
+  .add-row{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line);background:#fbfbfb;}
+  .add-row input{
+    flex:1;border:1px solid var(--line);border-radius:10px;padding:11px 12px;
+    font-size:15px;background:#fff;color:var(--ink);min-width:0;
+  }
+  .add-row input:focus{outline:2px solid var(--ink);outline-offset:-1px;}
+  .add-row button{
+    background:var(--ink);color:#fff;border:none;border-radius:10px;
+    padding:0 18px;font-size:20px;font-weight:600;cursor:pointer;flex-shrink:0;
+  }
+  .add-row button:active{opacity:.7;}
+  .settings-row{display:flex;gap:8px;align-items:center;padding:12px 16px;}
+  .settings-row label{font-size:13px;color:var(--muted);font-weight:600;}
+  .settings-row input{
+    border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:14px;flex:1;
+  }
+  .email-card{background:var(--ink);color:#fff;border-radius:var(--radius);padding:16px;margin-top:8px;}
+  .email-card h2{margin:0 0 10px;font-size:15px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;}
+  #preview{
+    background:#151515;border-radius:10px;padding:16px 18px;
+    font-size:14.5px;line-height:1.7;color:#eaeaea;max-height:380px;overflow-y:auto;
+    border:1px solid #2a2a2a;
+  }
+  #preview .heading{font-weight:800;margin:14px 0 4px;color:#fff;}
+  #preview .heading:first-child{margin-top:0;}
+  #preview .bullet-line{font-weight:700;margin:0 0 3px 22px;}
+  #preview .plain-line{margin:0 0 2px;}
+  .btn-row{display:flex;gap:10px;margin-top:12px;}
+  .btn{
+    flex:1;text-align:center;padding:13px;border-radius:10px;font-size:14.5px;font-weight:700;
+    border:none;cursor:pointer;
+  }
+  .btn-primary{background:#fff;color:var(--ink);}
+  .btn-primary:active{opacity:.75;}
+  .btn-ghost{background:transparent;color:#fff;border:1px solid #444;}
+  .btn-ghost:active{opacity:.6;}
+  .reset-wrap{text-align:center;margin-top:22px;}
+  .reset-btn{
+    background:none;border:none;color:var(--danger);font-size:13.5px;font-weight:700;
+    padding:10px;cursor:pointer;
+  }
+  .toast{
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
+    background:var(--ink);color:#fff;padding:10px 18px;border-radius:30px;font-size:13.5px;
+    font-weight:600;opacity:0;pointer-events:none;transition:all .25s ease;z-index:50;
+    box-shadow:0 6px 20px rgba(0,0,0,.25);
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Weekly Rundown</h1>
+  <p>Add as you go · generate the email at week's end</p>
+</header>
+
+<main>
+
+  <div class="section" data-key="thisWeek">
+    <div class="section-head"><h2>This week</h2><span class="count">0</span></div>
+    <ul class="items"></ul>
+    <div class="empty">Nothing added yet</div>
+    <div class="add-row">
+      <input type="text" placeholder="What did you do?" enterkeyhint="done">
+      <button aria-label="Add">+</button>
+    </div>
+  </div>
+
+  <div class="section" data-key="nextWeek">
+    <div class="section-head"><h2>Next week</h2><span class="count">0</span></div>
+    <ul class="items"></ul>
+    <div class="empty">Nothing added yet</div>
+    <div class="add-row">
+      <input type="text" placeholder="What's planned?" enterkeyhint="done">
+      <button aria-label="Add">+</button>
+    </div>
+  </div>
+
+  <div class="section" data-key="concerns">
+    <div class="section-head"><h2>Concerns / Issues</h2><span class="count">0</span></div>
+    <ul class="items"></ul>
+    <div class="empty">Nothing added yet</div>
+    <div class="add-row">
+      <input type="text" placeholder="Anything to flag?" enterkeyhint="done">
+      <button aria-label="Add">+</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="settings-row">
+      <label for="firstName">Sign off as</label>
+      <input type="text" id="firstName" placeholder="Iggy">
+    </div>
+  </div>
+
+  <div class="email-card">
+    <h2>Email preview</h2>
+    <div id="preview"></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="copyBtn">Copy email</button>
+      <button class="btn btn-ghost" id="mailBtn">Open in Mail</button>
+    </div>
+  </div>
+
+  <div class="reset-wrap">
+    <button class="reset-btn" id="resetBtn">Reset everything</button>
+  </div>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const STORAGE_KEY = 'bigsky_weekly_rundown_v1';
+const TO_ADDRESS = 'facilities@bigskylondon.com';
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return { thisWeek: [], nextWeek: [], concerns: [], firstName: 'Iggy' };
+}
+let state = loadState();
+
+function saveState(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+const sections = document.querySelectorAll('.section[data-key]');
+const firstNameInput = document.getElementById('firstName');
+firstNameInput.value = state.firstName || '';
+
+function render(){
+  sections.forEach(sec => {
+    const key = sec.dataset.key;
+    const list = sec.querySelector('.items');
+    const emptyMsg = sec.querySelector('.empty');
+    const countEl = sec.querySelector('.count');
+    const items = state[key] || [];
+    list.innerHTML = '';
+    countEl.textContent = items.length;
+    emptyMsg.style.display = items.length ? 'none' : 'block';
+    items.forEach((text, idx) => {
+      const li = document.createElement('li');
+      li.innerHTML = '<span class="bullet">•</span><span class="txt"></span><button>Remove</button>';
+      li.querySelector('.txt').textContent = text;
+      li.querySelector('button').addEventListener('click', () => {
+        state[key].splice(idx,1);
+        saveState();
+        render();
+      });
+      list.appendChild(li);
+    });
+  });
+  updatePreview();
+}
+
+sections.forEach(sec => {
+  const key = sec.dataset.key;
+  const input = sec.querySelector('.add-row input');
+  const addBtn = sec.querySelector('.add-row button');
+  function addItem(){
+    const val = input.value.trim();
+    if(!val) return;
+    state[key] = state[key] || [];
+    state[key].push(val);
+    input.value = '';
+    saveState();
+    render();
+    input.focus();
+  }
+  addBtn.addEventListener('click', addItem);
+  input.addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); addItem(); } });
+});
+
+firstNameInput.addEventListener('input', () => {
+  state.firstName = firstNameInput.value;
+  saveState();
+  updatePreview();
+});
+
+function escapeHtml(s){
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// Rich HTML version — bold section headings, indented bold bullets.
+// Built from divs so it pastes cleanly into Gmail's rich-text compose box.
+function buildEmailHTML(){
+  const name = (state.firstName || 'Iggy').trim() || 'Iggy';
+  let html = '<div>Hi all,</div><div><br></div>';
+
+  function block(title, items){
+    if(!items || !items.length) return;
+    html += '<div style="font-weight:700;">' + escapeHtml(title) + '</div>';
+    items.forEach(i => {
+      html += '<div style="font-weight:700;margin-left:22px;">&bull;&nbsp;' + escapeHtml(i) + '</div>';
+    });
+    html += '<div><br></div>';
+  }
+
+  block('This week', state.thisWeek);
+  block('Next week', state.nextWeek);
+  block('Concerns / Issues', state.concerns);
+
+  html += '<div>Thanks,</div><div><br></div><div>' + escapeHtml(name) + '</div>';
+  return html;
+}
+
+// Plain-text version — used for Mail app (mailto can't carry formatting)
+// and as the clipboard fallback for apps that don't accept rich paste.
+function buildEmailPlain(){
+  const name = (state.firstName || 'Iggy').trim() || 'Iggy';
+  let lines = ['Hi all,',''];
+
+  function block(title, items){
+    if(!items || !items.length) return;
+    lines.push(title);
+    items.forEach(i => lines.push('* ' + i));
+    lines.push('');
+  }
+
+  block('This week', state.thisWeek);
+  block('Next week', state.nextWeek);
+  block('Concerns / Issues', state.concerns);
+
+  lines.push('Thanks,');
+  lines.push('');
+  lines.push(name);
+
+  return lines.join('\n');
+}
+
+function updatePreview(){
+  document.getElementById('preview').innerHTML = buildEmailHTML();
+}
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(showToast._tid);
+  showToast._tid = setTimeout(()=>t.classList.remove('show'), 1800);
+}
+
+document.getElementById('copyBtn').addEventListener('click', async () => {
+  const html = buildEmailHTML();
+  const plain = buildEmailPlain();
+  try{
+    if(navigator.clipboard && window.ClipboardItem){
+      const item = new ClipboardItem({
+        'text/html': new Blob([html], { type: 'text/html' }),
+        'text/plain': new Blob([plain], { type: 'text/plain' })
+      });
+      await navigator.clipboard.write([item]);
+    } else {
+      await navigator.clipboard.writeText(plain);
+    }
+    showToast('Email copied');
+  }catch(e){
+    try{
+      await navigator.clipboard.writeText(plain);
+      showToast('Email copied');
+    }catch(e2){
+      const ta = document.createElement('textarea');
+      ta.value = plain;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      showToast('Email copied');
+    }
+  }
+});
+
+document.getElementById('mailBtn').addEventListener('click', () => {
+  const body = buildEmailPlain();
+  const subject = 'Facilities Weekly Update';
+  const url = 'mailto:' + encodeURIComponent(TO_ADDRESS) +
+    '?subject=' + encodeURIComponent(subject) +
+    '&body=' + encodeURIComponent(body);
+  window.location.href = url;
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  if(confirm('Reset everything? This clears this week, next week and concerns — cannot be undone.')){
+    const name = state.firstName;
+    state = { thisWeek: [], nextWeek: [], concerns: [], firstName: name };
+    saveState();
+    render();
+    showToast('Reset');
+  }
+});
+
+render();
+</script>
+</body>
+</html>
