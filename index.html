@@ -37,22 +37,37 @@
     margin-bottom:16px;overflow:hidden;
   }
   .section-head{
-    padding:14px 16px;display:flex;align-items:center;justify-content:space-between;
+    padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:8px;
     border-bottom:1px solid var(--line);
   }
-  .section-head h2{margin:0;font-size:15px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;}
-  .count{font-size:12px;color:var(--muted);font-weight:600;}
+  .section-head h2{margin:0;font-size:15px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;flex:1;
+    min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .section-head input.heading-input{
+    flex:1;min-width:0;font-size:15px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;
+    border:1px solid var(--ink);border-radius:6px;padding:4px 8px;font-family:inherit;background:#fff;color:var(--ink);
+  }
+  .head-controls{display:flex;align-items:center;gap:4px;flex-shrink:0;}
+  .icon-btn{
+    border:none;background:none;cursor:pointer;font-size:15px;line-height:1;padding:5px 6px;
+    color:var(--muted);border-radius:6px;flex-shrink:0;
+  }
+  .icon-btn:active{background:#eee;}
+  .icon-btn.save{color:var(--ok);font-weight:700;font-size:13px;}
+  .icon-btn.cancel{color:var(--danger);font-weight:700;font-size:13px;}
+  .count{font-size:12px;color:var(--muted);font-weight:600;flex-shrink:0;}
   .items{list-style:none;margin:0;padding:0;}
   .items li{
-    display:flex;align-items:flex-start;gap:10px;padding:12px 16px;
+    display:flex;align-items:flex-start;gap:8px;padding:12px 16px;
     border-bottom:1px solid var(--line);font-size:15px;line-height:1.4;
   }
   .items li:last-child{border-bottom:none;}
   .items li .bullet{color:var(--muted);flex-shrink:0;margin-top:1px;}
-  .items li .txt{flex:1;word-break:break-word;}
-  .items li button{
-    border:none;background:none;color:var(--danger);font-size:13px;font-weight:700;
-    padding:2px 4px;cursor:pointer;flex-shrink:0;
+  .items li .txt{flex:1;word-break:break-word;padding-top:1px;}
+  .items li .item-controls{display:flex;gap:2px;flex-shrink:0;}
+  .items li .edit-row{flex:1;display:flex;gap:6px;align-items:center;}
+  .items li .edit-row input{
+    flex:1;border:1px solid var(--ink);border-radius:8px;padding:8px 10px;font-size:14.5px;
+    font-family:inherit;background:#fff;color:var(--ink);min-width:0;
   }
   .empty{padding:16px;color:var(--muted);font-size:13.5px;font-style:italic;}
   .add-row{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line);background:#fbfbfb;}
@@ -115,7 +130,7 @@
 <main>
 
   <div class="section" data-key="thisWeek">
-    <div class="section-head"><h2>This week</h2><span class="count">0</span></div>
+    <div class="section-head"></div>
     <ul class="items"></ul>
     <div class="empty">Nothing added yet</div>
     <div class="add-row">
@@ -125,7 +140,7 @@
   </div>
 
   <div class="section" data-key="nextWeek">
-    <div class="section-head"><h2>Next week</h2><span class="count">0</span></div>
+    <div class="section-head"></div>
     <ul class="items"></ul>
     <div class="empty">Nothing added yet</div>
     <div class="add-row">
@@ -135,7 +150,7 @@
   </div>
 
   <div class="section" data-key="concerns">
-    <div class="section-head"><h2>Concerns / Issues</h2><span class="count">0</span></div>
+    <div class="section-head"></div>
     <ul class="items"></ul>
     <div class="empty">Nothing added yet</div>
     <div class="add-row">
@@ -172,12 +187,23 @@
 const STORAGE_KEY = 'bigsky_weekly_rundown_v1';
 const TO_ADDRESS = 'facilities@bigskylondon.com';
 
+const DEFAULT_HEADINGS = {
+  thisWeek: 'This week',
+  nextWeek: 'Next week',
+  concerns: 'Concerns / Issues'
+};
+
 function loadState(){
+  let s;
   try{
     const raw = localStorage.getItem(STORAGE_KEY);
-    if(raw) return JSON.parse(raw);
+    if(raw) s = JSON.parse(raw);
   }catch(e){}
-  return { thisWeek: [], nextWeek: [], concerns: [], firstName: 'Iggy' };
+  if(!s) s = { thisWeek: [], nextWeek: [], concerns: [], firstName: 'Iggy' };
+  if(!s.headings) s.headings = { ...DEFAULT_HEADINGS };
+  // fill in any missing keys (e.g. new sections added later)
+  Object.keys(DEFAULT_HEADINGS).forEach(k => { if(!s.headings[k]) s.headings[k] = DEFAULT_HEADINGS[k]; });
+  return s;
 }
 let state = loadState();
 
@@ -185,29 +211,166 @@ function saveState(){
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
+// Tracks which single item or heading is currently being edited, if any.
+let editingItem = null;    // { key, index }
+let editingHeading = null; // key
+
 const sections = document.querySelectorAll('.section[data-key]');
 const firstNameInput = document.getElementById('firstName');
 firstNameInput.value = state.firstName || '';
 
+function renderHeading(sec){
+  const key = sec.dataset.key;
+  const head = sec.querySelector('.section-head');
+  head.innerHTML = '';
+
+  if(editingHeading === key){
+    const input = document.createElement('input');
+    input.className = 'heading-input';
+    input.value = state.headings[key];
+    head.appendChild(input);
+
+    const controls = document.createElement('div');
+    controls.className = 'head-controls';
+    const saveBtn = document.createElement('button');
+    saveBtn.className = 'icon-btn save';
+    saveBtn.textContent = 'Save';
+    saveBtn.addEventListener('click', () => {
+      const val = input.value.trim();
+      state.headings[key] = val || DEFAULT_HEADINGS[key];
+      editingHeading = null;
+      saveState();
+      render();
+    });
+    const cancelBtn = document.createElement('button');
+    cancelBtn.className = 'icon-btn cancel';
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.addEventListener('click', () => { editingHeading = null; render(); });
+    controls.appendChild(saveBtn);
+    controls.appendChild(cancelBtn);
+    head.appendChild(controls);
+
+    setTimeout(() => { input.focus(); input.select(); }, 0);
+    input.addEventListener('keydown', e => {
+      if(e.key === 'Enter'){ e.preventDefault(); saveBtn.click(); }
+      if(e.key === 'Escape'){ e.preventDefault(); cancelBtn.click(); }
+    });
+    return;
+  }
+
+  const h2 = document.createElement('h2');
+  h2.textContent = state.headings[key];
+  head.appendChild(h2);
+
+  const controls = document.createElement('div');
+  controls.className = 'head-controls';
+
+  if(state.headings[key] !== DEFAULT_HEADINGS[key]){
+    const resetBtn = document.createElement('button');
+    resetBtn.className = 'icon-btn';
+    resetBtn.title = 'Reset to default';
+    resetBtn.textContent = '↺';
+    resetBtn.addEventListener('click', () => {
+      state.headings[key] = DEFAULT_HEADINGS[key];
+      saveState();
+      render();
+    });
+    controls.appendChild(resetBtn);
+  }
+
+  const editBtn = document.createElement('button');
+  editBtn.className = 'icon-btn';
+  editBtn.title = 'Rename section';
+  editBtn.textContent = '✎';
+  editBtn.addEventListener('click', () => { editingHeading = key; render(); });
+  controls.appendChild(editBtn);
+
+  const countEl = document.createElement('span');
+  countEl.className = 'count';
+  countEl.textContent = (state[key] || []).length;
+  controls.appendChild(countEl);
+
+  head.appendChild(controls);
+}
+
 function render(){
   sections.forEach(sec => {
     const key = sec.dataset.key;
+    renderHeading(sec);
+
     const list = sec.querySelector('.items');
     const emptyMsg = sec.querySelector('.empty');
-    const countEl = sec.querySelector('.count');
     const items = state[key] || [];
     list.innerHTML = '';
-    countEl.textContent = items.length;
     emptyMsg.style.display = items.length ? 'none' : 'block';
+
     items.forEach((text, idx) => {
       const li = document.createElement('li');
-      li.innerHTML = '<span class="bullet">•</span><span class="txt"></span><button>Remove</button>';
-      li.querySelector('.txt').textContent = text;
-      li.querySelector('button').addEventListener('click', () => {
-        state[key].splice(idx,1);
-        saveState();
-        render();
-      });
+
+      if(editingItem && editingItem.key === key && editingItem.index === idx){
+        const editRow = document.createElement('div');
+        editRow.className = 'edit-row';
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = text;
+        editRow.appendChild(input);
+
+        const saveBtn = document.createElement('button');
+        saveBtn.className = 'icon-btn save';
+        saveBtn.textContent = 'Save';
+        saveBtn.addEventListener('click', () => {
+          const val = input.value.trim();
+          if(val) state[key][idx] = val;
+          editingItem = null;
+          saveState();
+          render();
+        });
+        const cancelBtn = document.createElement('button');
+        cancelBtn.className = 'icon-btn cancel';
+        cancelBtn.textContent = 'Cancel';
+        cancelBtn.addEventListener('click', () => { editingItem = null; render(); });
+
+        editRow.appendChild(saveBtn);
+        editRow.appendChild(cancelBtn);
+        li.appendChild(editRow);
+
+        setTimeout(() => { input.focus(); input.select(); }, 0);
+        input.addEventListener('keydown', e => {
+          if(e.key === 'Enter'){ e.preventDefault(); saveBtn.click(); }
+          if(e.key === 'Escape'){ e.preventDefault(); cancelBtn.click(); }
+        });
+      } else {
+        const bullet = document.createElement('span');
+        bullet.className = 'bullet';
+        bullet.textContent = '•';
+        const txt = document.createElement('span');
+        txt.className = 'txt';
+        txt.textContent = text;
+
+        const itemControls = document.createElement('div');
+        itemControls.className = 'item-controls';
+        const editBtn = document.createElement('button');
+        editBtn.className = 'icon-btn';
+        editBtn.title = 'Edit';
+        editBtn.textContent = '✎';
+        editBtn.addEventListener('click', () => { editingItem = { key, index: idx }; render(); });
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'icon-btn';
+        removeBtn.title = 'Remove';
+        removeBtn.textContent = '✕';
+        removeBtn.addEventListener('click', () => {
+          state[key].splice(idx,1);
+          saveState();
+          render();
+        });
+        itemControls.appendChild(editBtn);
+        itemControls.appendChild(removeBtn);
+
+        li.appendChild(bullet);
+        li.appendChild(txt);
+        li.appendChild(itemControls);
+      }
+
       list.appendChild(li);
     });
   });
@@ -248,18 +411,18 @@ function buildEmailHTML(){
   const name = (state.firstName || 'Iggy').trim() || 'Iggy';
   let html = '<div>Hi all,</div><div><br></div>';
 
-  function block(title, items){
+  function block(key, items){
     if(!items || !items.length) return;
-    html += '<div style="font-weight:700;">' + escapeHtml(title) + '</div>';
+    html += '<div style="font-weight:700;">' + escapeHtml(state.headings[key]) + '</div>';
     items.forEach(i => {
       html += '<div style="font-weight:700;margin-left:22px;">&bull;&nbsp;' + escapeHtml(i) + '</div>';
     });
     html += '<div><br></div>';
   }
 
-  block('This week', state.thisWeek);
-  block('Next week', state.nextWeek);
-  block('Concerns / Issues', state.concerns);
+  block('thisWeek', state.thisWeek);
+  block('nextWeek', state.nextWeek);
+  block('concerns', state.concerns);
 
   html += '<div>Thanks,</div><div><br></div><div>' + escapeHtml(name) + '</div>';
   return html;
@@ -271,16 +434,16 @@ function buildEmailPlain(){
   const name = (state.firstName || 'Iggy').trim() || 'Iggy';
   let lines = ['Hi all,',''];
 
-  function block(title, items){
+  function block(key, items){
     if(!items || !items.length) return;
-    lines.push(title);
+    lines.push(state.headings[key]);
     items.forEach(i => lines.push('* ' + i));
     lines.push('');
   }
 
-  block('This week', state.thisWeek);
-  block('Next week', state.nextWeek);
-  block('Concerns / Issues', state.concerns);
+  block('thisWeek', state.thisWeek);
+  block('nextWeek', state.nextWeek);
+  block('concerns', state.concerns);
 
   lines.push('Thanks,');
   lines.push('');
@@ -341,9 +504,11 @@ document.getElementById('mailBtn').addEventListener('click', () => {
 });
 
 document.getElementById('resetBtn').addEventListener('click', () => {
-  if(confirm('Reset everything? This clears this week, next week and concerns — cannot be undone.')){
+  if(confirm('Reset everything? This clears this week, next week and concerns, and restores default headings — cannot be undone.')){
     const name = state.firstName;
-    state = { thisWeek: [], nextWeek: [], concerns: [], firstName: name };
+    state = { thisWeek: [], nextWeek: [], concerns: [], firstName: name, headings: { ...DEFAULT_HEADINGS } };
+    editingItem = null;
+    editingHeading = null;
     saveState();
     render();
     showToast('Reset');
