@@ -119,6 +119,42 @@
     box-shadow:0 6px 20px rgba(0,0,0,.25);
   }
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  /* Send-report modal */
+  .modal-overlay{
+    display:none;position:fixed;inset:0;z-index:100;
+    background:rgba(0,0,0,0.55);
+    padding:20px;
+    align-items:flex-end;justify-content:center;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal{
+    background:#fff;color:var(--ink);border-radius:16px;
+    width:100%;max-width:480px;max-height:88vh;
+    display:flex;flex-direction:column;overflow:hidden;
+  }
+  .modal-head{
+    padding:16px 18px;border-bottom:1px solid var(--line);
+    display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+  }
+  .modal-head h2{margin:0;font-size:16px;font-weight:800;}
+  .modal-close{background:none;border:none;font-size:22px;line-height:1;cursor:pointer;color:var(--muted);padding:0;}
+  .modal-body{padding:16px 18px;overflow-y:auto;}
+  .modal-field{margin-bottom:12px;}
+  .modal-field label{display:block;font-size:12.5px;font-weight:700;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.3px;}
+  .modal-field input, .modal-field textarea{
+    width:100%;border:1px solid var(--line);border-radius:8px;padding:10px 11px;
+    font-size:14.5px;font-family:inherit;color:var(--ink);background:#fff;box-sizing:border-box;
+  }
+  .modal-field textarea{min-height:220px;resize:vertical;line-height:1.5;}
+  .send-status{font-size:13px;margin:8px 0 0;min-height:1.2em;color:var(--muted);}
+  .send-status.ok{color:var(--ok);font-weight:700;}
+  .send-status.err{color:var(--danger);font-weight:700;}
+  .modal-foot{padding:12px 18px;border-top:1px solid var(--line);display:flex;gap:8px;flex-shrink:0;}
+  .modal-foot .btn{color:#fff;}
+  .modal-foot .btn-primary{background:var(--ink);flex:1.3;}
+  .modal-foot .btn-secondary{background:#fff;color:var(--ink);border:1px solid var(--line);flex:1;}
+  .modal-foot .btn:disabled{opacity:0.6;cursor:wait;}
 </style>
 </head>
 <body>
@@ -171,7 +207,10 @@
     <h2>Email preview</h2>
     <div id="preview"></div>
     <div class="btn-row">
-      <button class="btn btn-primary" id="copyBtn">Copy email</button>
+      <button class="btn btn-primary" id="sendBtn">Send Email</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" id="copyBtn">Copy email</button>
       <button class="btn btn-ghost" id="mailBtn">Open in Mail</button>
     </div>
   </div>
@@ -183,6 +222,34 @@
 </main>
 
 <div class="toast" id="toast"></div>
+
+<div class="modal-overlay" id="sendModal" onclick="if(event.target===this)closeSendModal()">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="sendModalTitle">
+    <div class="modal-head">
+      <h2 id="sendModalTitle">Send weekly rundown</h2>
+      <button class="modal-close" aria-label="Close" onclick="closeSendModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-field">
+        <label for="sendTo">To</label>
+        <input type="email" id="sendTo">
+      </div>
+      <div class="modal-field">
+        <label for="sendSubject">Subject</label>
+        <input type="text" id="sendSubject">
+      </div>
+      <div class="modal-field" style="margin-bottom:0;">
+        <label for="sendBody">Message (edit before sending if needed)</label>
+        <textarea id="sendBody"></textarea>
+      </div>
+      <p class="send-status" id="sendStatus"></p>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-secondary" id="modalCopyBtn" onclick="copyFromModal()">Copy text</button>
+      <button class="btn btn-primary" id="confirmSendBtn" onclick="sendWeeklyEmail()">Send</button>
+    </div>
+  </div>
+</div>
 
 <script>
 const STORAGE_KEY = 'bigsky_weekly_rundown_v1';
@@ -503,6 +570,106 @@ document.getElementById('mailBtn').addEventListener('click', () => {
     '&body=' + encodeURIComponent(body);
   window.location.href = url;
 });
+
+/* ---------------------------------------------------------------------------
+   Send Email — posts straight to a small Apps Script backend (same pattern
+   as the studios checklist's "Send to Facilities"), so this goes out without
+   opening Mail at all. Review-then-send: nothing sends until you tap Send
+   in the popup below.
+--------------------------------------------------------------------------- */
+// Paste the Web App /exec URL here once deployed (see the accompanying .gs file).
+const WEEKLY_API_URL = "https://script.google.com/macros/s/AKfycbw4BMwWkpwNRgHIlY0VqDHDdGlPWqqeHNTa55bUy3jhH9W9QjajNlJ74JEOkstM4Mvc/exec";
+
+function openSendModal(){
+  document.getElementById('sendTo').value = TO_ADDRESS;
+  document.getElementById('sendSubject').value = 'Facilities Weekly Update';
+  document.getElementById('sendBody').value = buildEmailPlain();
+  const status = document.getElementById('sendStatus');
+  status.textContent = '';
+  status.className = 'send-status';
+  const btn = document.getElementById('confirmSendBtn');
+  btn.disabled = false;
+  btn.textContent = 'Send';
+  document.getElementById('sendModal').classList.add('open');
+}
+
+function closeSendModal(){
+  document.getElementById('sendModal').classList.remove('open');
+}
+
+async function copyFromModal(){
+  const text = document.getElementById('sendBody').value;
+  const btn = document.getElementById('modalCopyBtn');
+  try{
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      await navigator.clipboard.writeText(text);
+    } else {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+    btn.textContent = 'Copied ✓';
+    setTimeout(() => { btn.textContent = 'Copy text'; }, 1500);
+  }catch(e){
+    btn.textContent = 'Copy failed';
+  }
+}
+
+async function sendWeeklyEmail(){
+  const btn = document.getElementById('confirmSendBtn');
+  const status = document.getElementById('sendStatus');
+  const to = document.getElementById('sendTo').value.trim();
+  const subject = document.getElementById('sendSubject').value.trim();
+  const body = document.getElementById('sendBody').value.trim();
+
+  if(!to || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)){
+    status.textContent = 'Enter a valid email address to send to.';
+    status.className = 'send-status err';
+    document.getElementById('sendTo').focus();
+    return;
+  }
+
+  if(!WEEKLY_API_URL){
+    status.textContent = "Backend not set up yet — see WEEKLY_API_URL in the code.";
+    status.className = 'send-status err';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Sending…';
+  status.textContent = '';
+  status.className = 'send-status';
+
+  try{
+    const res = await fetch(WEEKLY_API_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'text/plain;charset=utf-8'},
+      body: JSON.stringify({ action: 'sendReport', to, subject, body })
+    });
+    const data = await res.json();
+    if(data && data.success){
+      status.textContent = `Sent to ${to} ✓`;
+      status.className = 'send-status ok';
+      btn.textContent = 'Sent ✓';
+    } else {
+      throw new Error((data && data.error) || 'Unknown error');
+    }
+  }catch(e){
+    console.error('sendWeeklyEmail failed:', e);
+    status.textContent = e && e.message ? `Couldn't send: ${e.message}` : "Couldn't send — check your connection and try again.";
+    status.className = 'send-status err';
+    btn.disabled = false;
+    btn.textContent = 'Send';
+  }
+}
+
+document.getElementById('sendBtn').addEventListener('click', openSendModal);
 
 document.getElementById('resetBtn').addEventListener('click', () => {
   if(confirm('Reset everything? This clears this week, next week and concerns, and restores default headings — cannot be undone.')){
