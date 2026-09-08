@@ -196,13 +196,6 @@
     </div>
   </div>
 
-  <div class="section">
-    <div class="settings-row">
-      <label for="firstName">Sign off as</label>
-      <input type="text" id="firstName" placeholder="Iggy">
-    </div>
-  </div>
-
   <div class="email-card">
     <h2>Email preview</h2>
     <div id="preview"></div>
@@ -255,6 +248,22 @@
 const STORAGE_KEY = 'bigsky_weekly_rundown_v1';
 const TO_ADDRESS = 'facilities@bigskylondon.com';
 
+function mondayISO(){
+  const d = new Date();
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+  const mon = new Date(d.setDate(diff));
+  return mon.toISOString().slice(0,10);
+}
+function fmtDisplay(iso){
+  if(!iso) return '';
+  const [y,m,d] = iso.split('-');
+  return `${d}/${m}/${y}`;
+}
+function buildSubject(){
+  return `Facilities: Weekly Summary - w/c ${fmtDisplay(mondayISO())}`;
+}
+
 const DEFAULT_HEADINGS = {
   thisWeek: 'This week',
   nextWeek: 'Next week',
@@ -284,9 +293,6 @@ let editingItem = null;    // { key, index }
 let editingHeading = null; // key
 
 const sections = document.querySelectorAll('.section[data-key]');
-const firstNameInput = document.getElementById('firstName');
-firstNameInput.value = state.firstName || '';
-
 function renderHeading(sec){
   const key = sec.dataset.key;
   const head = sec.querySelector('.section-head');
@@ -463,12 +469,6 @@ sections.forEach(sec => {
   input.addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); addItem(); } });
 });
 
-firstNameInput.addEventListener('input', () => {
-  state.firstName = firstNameInput.value;
-  saveState();
-  updatePreview();
-});
-
 function escapeHtml(s){
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
@@ -476,7 +476,6 @@ function escapeHtml(s){
 // Rich HTML version — bold section headings, indented bold bullets.
 // Built from divs so it pastes cleanly into Gmail's rich-text compose box.
 function buildEmailHTML(){
-  const name = (state.firstName || 'Iggy').trim() || 'Iggy';
   let html = '<div>Hi all,</div><div><br></div>';
 
   function block(key, items){
@@ -492,14 +491,13 @@ function buildEmailHTML(){
   block('nextWeek', state.nextWeek);
   block('concerns', state.concerns);
 
-  html += '<div>Thanks,</div><div><br></div><div>' + escapeHtml(name) + '</div>';
+  html += '<div>Best,</div>';
   return html;
 }
 
 // Plain-text version — used for Mail app (mailto can't carry formatting)
 // and as the clipboard fallback for apps that don't accept rich paste.
 function buildEmailPlain(){
-  const name = (state.firstName || 'Iggy').trim() || 'Iggy';
   let lines = ['Hi all,',''];
 
   function block(key, items){
@@ -513,9 +511,7 @@ function buildEmailPlain(){
   block('nextWeek', state.nextWeek);
   block('concerns', state.concerns);
 
-  lines.push('Thanks,');
-  lines.push('');
-  lines.push(name);
+  lines.push('Best,');
 
   return lines.join('\n');
 }
@@ -564,7 +560,7 @@ document.getElementById('copyBtn').addEventListener('click', async () => {
 
 document.getElementById('mailBtn').addEventListener('click', () => {
   const body = buildEmailPlain();
-  const subject = 'Facilities Weekly Update';
+  const subject = buildSubject();
   const url = 'mailto:' + encodeURIComponent(TO_ADDRESS) +
     '?subject=' + encodeURIComponent(subject) +
     '&body=' + encodeURIComponent(body);
@@ -582,7 +578,7 @@ const WEEKLY_API_URL = "https://script.google.com/macros/s/AKfycbw4BMwWkpwNRgHIl
 
 function openSendModal(){
   document.getElementById('sendTo').value = TO_ADDRESS;
-  document.getElementById('sendSubject').value = 'Facilities Weekly Update';
+  document.getElementById('sendSubject').value = buildSubject();
   document.getElementById('sendBody').value = buildEmailPlain();
   const status = document.getElementById('sendStatus');
   status.textContent = '';
