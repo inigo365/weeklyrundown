@@ -33,6 +33,15 @@
   header h1{margin:0;font-size:19px;font-weight:800;letter-spacing:.2px;}
   header p{margin:2px 0 0;font-size:12.5px;color:#c9c9c9;}
   main{padding:16px;max-width:640px;margin:0 auto;}
+  .tab-row{
+    display:flex;gap:8px;padding:12px 16px 0;max-width:640px;margin:0 auto;
+  }
+  .tab-btn{
+    flex:1;background:var(--card);border:1px solid var(--line);border-radius:10px;
+    padding:11px;font-size:13.5px;font-weight:700;color:var(--muted);cursor:pointer;
+    font-family:inherit;
+  }
+  .tab-btn.active{background:var(--ink);color:#fff;border-color:var(--ink);}
   .section{
     background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
     margin-bottom:16px;overflow:hidden;
@@ -155,6 +164,75 @@
   .modal-foot .btn-primary{background:var(--ink);flex:1.3;}
   .modal-foot .btn-secondary{background:#fff;color:var(--ink);border:1px solid var(--line);flex:1;}
   .modal-foot .btn:disabled{opacity:0.6;cursor:wait;}
+
+  /* To Do / Maintenance tabs */
+  .hub-card-head{
+    padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:8px;
+    border-bottom:1px solid var(--line);font-size:15px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;
+  }
+  .hub-refresh{background:none;border:none;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;text-transform:none;letter-spacing:0;text-decoration:underline;}
+  .hub-add-body{padding:14px 16px;}
+  .hub-field{margin-bottom:12px;}
+  .hub-field:last-of-type{margin-bottom:14px;}
+  .hub-field-row{display:flex;gap:10px;}
+  .hub-field-row .hub-field{flex:1;min-width:0;}
+  .hub-field label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.3px;}
+  .hub-field input, .hub-field textarea, .hub-field select{
+    width:100%;border:1px solid var(--line);border-radius:8px;padding:10px 11px;
+    font-size:14.5px;font-family:inherit;color:var(--ink);background:#fff;box-sizing:border-box;
+  }
+  .hub-field textarea{min-height:60px;resize:vertical;}
+  .btn-dark{
+    width:100%;background:var(--ink);color:#fff;border:none;border-radius:10px;
+    padding:13px;font-size:14.5px;font-weight:700;cursor:pointer;
+  }
+  .btn-dark:active{opacity:.75;}
+  .btn-dark:disabled{opacity:.6;cursor:wait;}
+  .hub-msg{font-size:13px;margin:8px 0 0;min-height:1.2em;color:var(--muted);}
+  .hub-msg.ok{color:var(--ok);font-weight:700;}
+  .hub-msg.err{color:var(--danger);font-weight:700;}
+  .hub-list-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);margin-top:16px;overflow:hidden;}
+  .hub-status{padding:20px 16px;text-align:center;color:var(--muted);font-size:13.5px;}
+  .hub-status.err{color:var(--danger);}
+  .hub-group-head{
+    padding:10px 16px 4px;font-size:11.5px;font-weight:800;color:var(--muted);
+    text-transform:uppercase;letter-spacing:.4px;
+  }
+  .hub-item{padding:12px 16px;border-top:1px solid var(--line);}
+  .hub-item:first-child{border-top:none;}
+  .hub-item-title{
+    width:100%;border:1px solid var(--line);border-radius:7px;padding:8px 9px;
+    font-size:14.5px;font-weight:700;font-family:inherit;color:var(--ink);background:#fff;
+    box-sizing:border-box;margin-bottom:6px;
+  }
+  .hub-item-sub{font-size:12px;color:var(--muted);margin-bottom:6px;}
+  .hub-item-notes{
+    width:100%;border:1px solid var(--line);border-radius:7px;padding:8px 9px;
+    font-size:13.5px;font-family:inherit;color:var(--ink);background:#fff;
+    box-sizing:border-box;min-height:36px;resize:vertical;margin-bottom:6px;
+  }
+  .hub-item-link{
+    width:100%;border:1px solid var(--line);border-radius:7px;padding:8px 9px;
+    font-size:13px;font-family:inherit;color:var(--ink);background:#fff;
+    box-sizing:border-box;margin-bottom:8px;
+  }
+  .hub-item-link-open{display:block;font-size:12.5px;color:var(--ink);margin:-2px 0 8px;text-decoration:underline;}
+  .hub-item-foot{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  .hub-chip{
+    border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:20px;
+    padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;
+  }
+  .hub-chip:active{background:#f0f0f0;}
+  .hub-chip.primary{background:var(--ink);color:#fff;border-color:var(--ink);}
+  .hub-chip.ok{color:var(--ok);border-color:var(--ok);}
+  .hub-item-meta{font-size:11.5px;color:var(--muted);margin-left:auto;}
+  .hub-done-wrap{margin-top:14px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;}
+  .hub-done-wrap summary{
+    padding:13px 16px;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;
+    color:var(--muted);cursor:pointer;list-style:none;
+  }
+  .hub-done-wrap summary::-webkit-details-marker{display:none;}
+  .hub-item.done{opacity:0.7;}
 </style>
 </head>
 <body>
@@ -164,7 +242,15 @@
   <p>Add as you go · generate the email at week's end</p>
 </header>
 
+<nav class="tab-row">
+  <button class="tab-btn active" id="tabRundown" onclick="switchTab('rundown')">Rundown</button>
+  <button class="tab-btn" id="tabTodo" onclick="switchTab('todo')">To Do</button>
+  <button class="tab-btn" id="tabMaint" onclick="switchTab('maint')">Maintenance</button>
+</nav>
+
 <main>
+
+<div id="rundownView">
 
   <div class="section" data-key="thisWeek">
     <div class="section-head"></div>
@@ -211,6 +297,101 @@
   <div class="reset-wrap">
     <button class="reset-btn" id="resetBtn">Reset everything</button>
   </div>
+
+</div><!-- /#rundownView -->
+
+<div id="todoView" style="display:none;">
+  <div class="section">
+    <div class="hub-card-head">
+      <span>Add a to-do</span>
+    </div>
+    <div class="hub-add-body">
+      <div class="hub-field">
+        <label for="todoTask">Task</label>
+        <input type="text" id="todoTask" placeholder="e.g. Chase Applewood re: sensor quote">
+      </div>
+      <div class="hub-field">
+        <label for="todoNotes">Notes / how I'll do it (optional)</label>
+        <textarea id="todoNotes" placeholder="Approach, who to contact, anything useful..."></textarea>
+      </div>
+      <div class="hub-field">
+        <label for="todoLink">Link (optional)</label>
+        <input type="url" id="todoLink" placeholder="https://...">
+      </div>
+      <button class="btn btn-dark" id="todoAddBtn" onclick="addTodo()">Add to list</button>
+      <p class="hub-msg" id="todoAddMsg"></p>
+    </div>
+  </div>
+
+  <div class="hub-list-card">
+    <div class="hub-card-head">
+      <span>Open (<span id="todoOpenCount">0</span>)</span>
+      <button class="hub-refresh" onclick="loadHubData()">Refresh</button>
+    </div>
+    <div id="todoOpenContainer"></div>
+  </div>
+
+  <details class="hub-done-wrap" id="todoDoneWrap" style="display:none;">
+    <summary>Done (<span id="todoDoneCount">0</span>)</summary>
+    <div id="todoDoneContainer"></div>
+  </details>
+</div><!-- /#todoView -->
+
+<div id="maintView" style="display:none;">
+  <div class="section">
+    <div class="hub-card-head">
+      <span>Add a maintenance item</span>
+    </div>
+    <div class="hub-add-body">
+      <div class="hub-field-row">
+        <div class="hub-field">
+          <label for="maintFloor">Floor</label>
+          <input type="text" id="maintFloor" placeholder="e.g. 3rd floor">
+        </div>
+        <div class="hub-field">
+          <label for="maintArea">Area</label>
+          <input type="text" id="maintArea" placeholder="e.g. Cafe">
+        </div>
+      </div>
+      <div class="hub-field">
+        <label for="maintDesc">Description</label>
+        <input type="text" id="maintDesc" placeholder="What needs doing">
+      </div>
+      <div class="hub-field-row">
+        <div class="hub-field">
+          <label for="maintType">Type</label>
+          <select id="maintType">
+            <option>In house</option>
+            <option>Contractor</option>
+          </select>
+        </div>
+        <div class="hub-field">
+          <label for="maintTimeframe">Timeframe</label>
+          <input type="text" id="maintTimeframe" placeholder="Optional">
+        </div>
+      </div>
+      <div class="hub-field">
+        <label for="maintComments">Comments (optional)</label>
+        <textarea id="maintComments" placeholder="Anything extra..."></textarea>
+      </div>
+      <button class="btn btn-dark" id="maintAddBtn" onclick="addMaintenance()">Add to list</button>
+      <p class="hub-msg" id="maintAddMsg"></p>
+    </div>
+  </div>
+
+  <div class="hub-list-card">
+    <div class="hub-card-head">
+      <span>Outstanding (<span id="maintOpenCount">0</span>)</span>
+      <button class="hub-refresh" onclick="loadHubData()">Refresh</button>
+    </div>
+    <div id="maintOpenContainer"></div>
+  </div>
+
+  <details class="hub-done-wrap" id="maintDoneWrap" style="display:none;">
+    <summary>Done (<span id="maintDoneCount">0</span>)</summary>
+    <div id="maintDoneContainer"></div>
+  </details>
+</div><!-- /#maintView -->
 
 </main>
 
@@ -678,6 +859,360 @@ document.getElementById('resetBtn').addEventListener('click', () => {
     showToast('Reset');
   }
 });
+
+/* ---------------------------------------------------------------------------
+   To Do + Maintenance tabs — synced to the same Apps Script backend as the
+   Send Email feature (WEEKLY_API_URL above), so both lists are backed up
+   and accessible from any device, not just this phone.
+--------------------------------------------------------------------------- */
+let hubData = null;      // { todo: [...], maintenance: [...] } once loaded
+let hubError = false;
+const hubFieldTimers = {}; // debounce map, keyed by `${list}:${id}:${field}`
+
+function switchTab(tab){
+  document.getElementById('rundownView').style.display = tab === 'rundown' ? '' : 'none';
+  document.getElementById('todoView').style.display = tab === 'todo' ? '' : 'none';
+  document.getElementById('maintView').style.display = tab === 'maint' ? '' : 'none';
+  document.getElementById('tabRundown').classList.toggle('active', tab === 'rundown');
+  document.getElementById('tabTodo').classList.toggle('active', tab === 'todo');
+  document.getElementById('tabMaint').classList.toggle('active', tab === 'maint');
+  if((tab === 'todo' || tab === 'maint') && hubData === null){
+    loadHubData();
+  }
+}
+
+async function loadHubData(){
+  hubError = false;
+  renderTodoList();
+  renderMaintList();
+  try{
+    const res = await fetch(WEEKLY_API_URL);
+    const data = await res.json();
+    hubData = { todo: data.todo || [], maintenance: data.maintenance || [] };
+  }catch(e){
+    console.error('loadHubData failed:', e);
+    hubError = true;
+  }
+  renderTodoList();
+  renderMaintList();
+}
+
+function hubStatusHtml(){
+  if(hubData === null && !hubError) return `<div class="hub-status">Loading…</div>`;
+  if(hubError) return `<div class="hub-status err">Couldn't reach the list. Check your connection and tap Refresh.</div>`;
+  return null;
+}
+
+/* ---------- To Do ---------- */
+
+async function addTodo(){
+  const btn = document.getElementById('todoAddBtn');
+  const msg = document.getElementById('todoAddMsg');
+  const taskEl = document.getElementById('todoTask');
+  const notesEl = document.getElementById('todoNotes');
+  const linkEl = document.getElementById('todoLink');
+
+  const task = taskEl.value.trim();
+  if(!task){
+    msg.textContent = 'Add a task first.';
+    msg.className = 'hub-msg err';
+    taskEl.focus();
+    return;
+  }
+
+  const prevLabel = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Adding…';
+  msg.textContent = '';
+  msg.className = 'hub-msg';
+
+  try{
+    const res = await fetch(WEEKLY_API_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'text/plain;charset=utf-8'},
+      body: JSON.stringify({ action:'add', list:'todo', task, notes: notesEl.value.trim(), link: linkEl.value.trim() })
+    });
+    const data = await res.json();
+    if(!(data && data.success)) throw new Error((data && data.error) || 'Unknown error');
+    taskEl.value = '';
+    notesEl.value = '';
+    linkEl.value = '';
+    msg.textContent = 'Added ✓';
+    msg.className = 'hub-msg ok';
+    await loadHubData();
+  }catch(e){
+    console.error('addTodo failed:', e);
+    msg.textContent = e && e.message ? `Couldn't add: ${e.message}` : "Couldn't add — check your connection.";
+    msg.className = 'hub-msg err';
+  }finally{
+    btn.disabled = false;
+    btn.textContent = prevLabel;
+  }
+}
+
+function renderTodoList(){
+  const openC = document.getElementById('todoOpenContainer');
+  const doneC = document.getElementById('todoDoneContainer');
+  const status = hubStatusHtml();
+  if(status){
+    openC.innerHTML = status;
+    doneC.innerHTML = '';
+    document.getElementById('todoOpenCount').textContent = '0';
+    document.getElementById('todoDoneWrap').style.display = 'none';
+    return;
+  }
+  const items = hubData.todo.slice().sort((a,b) => new Date(b.Timestamp) - new Date(a.Timestamp));
+  const open = items.filter(it => (it.Status || 'Open') === 'Open');
+  const done = items.filter(it => (it.Status || 'Open') === 'Done');
+
+  document.getElementById('todoOpenCount').textContent = open.length;
+  document.getElementById('todoDoneCount').textContent = done.length;
+  document.getElementById('todoDoneWrap').style.display = done.length ? '' : 'none';
+
+  openC.innerHTML = open.length ? '' : `<div class="hub-status">Nothing on your list right now.</div>`;
+  open.forEach(it => openC.appendChild(renderTodoItem(it, false)));
+
+  doneC.innerHTML = '';
+  done.forEach(it => doneC.appendChild(renderTodoItem(it, true)));
+}
+
+function renderTodoItem(it, isDone){
+  const wrap = document.createElement('div');
+  wrap.className = 'hub-item' + (isDone ? ' done' : '');
+
+  const title = document.createElement('input');
+  title.type = 'text';
+  title.className = 'hub-item-title';
+  title.value = it.Task || '';
+  title.oninput = () => debouncedFieldUpdate('todo', it.ID, 'task', title.value);
+  wrap.appendChild(title);
+
+  const notes = document.createElement('textarea');
+  notes.className = 'hub-item-notes';
+  notes.placeholder = 'Notes / approach';
+  notes.value = it.Notes || '';
+  notes.oninput = () => debouncedFieldUpdate('todo', it.ID, 'notes', notes.value);
+  wrap.appendChild(notes);
+
+  const link = document.createElement('input');
+  link.type = 'url';
+  link.className = 'hub-item-link';
+  link.placeholder = 'Link (optional)';
+  link.value = it.Link || '';
+  link.oninput = () => debouncedFieldUpdate('todo', it.ID, 'link', link.value);
+  wrap.appendChild(link);
+
+  if(it.Link){
+    const a = document.createElement('a');
+    a.href = it.Link;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.className = 'hub-item-link-open';
+    a.textContent = 'Open link ↗';
+    wrap.appendChild(a);
+  }
+
+  const foot = document.createElement('div');
+  foot.className = 'hub-item-foot';
+
+  const doneBtn = document.createElement('button');
+  doneBtn.className = 'hub-chip' + (isDone ? '' : ' primary');
+  doneBtn.textContent = isDone ? 'Reopen' : 'Mark done';
+  doneBtn.onclick = () => resolveHubItem('todo', it.ID, !isDone);
+  foot.appendChild(doneBtn);
+
+  const addBtn = document.createElement('button');
+  addBtn.className = 'hub-chip ok';
+  addBtn.textContent = 'Add to rundown';
+  addBtn.onclick = () => addToRundown(it.Task || '');
+  foot.appendChild(addBtn);
+
+  wrap.appendChild(foot);
+  return wrap;
+}
+
+/* ---------- Maintenance ---------- */
+
+async function addMaintenance(){
+  const btn = document.getElementById('maintAddBtn');
+  const msg = document.getElementById('maintAddMsg');
+  const floorEl = document.getElementById('maintFloor');
+  const areaEl = document.getElementById('maintArea');
+  const descEl = document.getElementById('maintDesc');
+  const typeEl = document.getElementById('maintType');
+  const timeframeEl = document.getElementById('maintTimeframe');
+  const commentsEl = document.getElementById('maintComments');
+
+  const description = descEl.value.trim();
+  if(!description){
+    msg.textContent = 'Add a description first.';
+    msg.className = 'hub-msg err';
+    descEl.focus();
+    return;
+  }
+
+  const prevLabel = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Adding…';
+  msg.textContent = '';
+  msg.className = 'hub-msg';
+
+  try{
+    const res = await fetch(WEEKLY_API_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'text/plain;charset=utf-8'},
+      body: JSON.stringify({
+        action:'add', list:'maintenance',
+        floor: floorEl.value.trim(), area: areaEl.value.trim(), description,
+        type: typeEl.value, timeframe: timeframeEl.value.trim(), comments: commentsEl.value.trim()
+      })
+    });
+    const data = await res.json();
+    if(!(data && data.success)) throw new Error((data && data.error) || 'Unknown error');
+    floorEl.value = '';
+    areaEl.value = '';
+    descEl.value = '';
+    timeframeEl.value = '';
+    commentsEl.value = '';
+    msg.textContent = 'Added ✓';
+    msg.className = 'hub-msg ok';
+    await loadHubData();
+  }catch(e){
+    console.error('addMaintenance failed:', e);
+    msg.textContent = e && e.message ? `Couldn't add: ${e.message}` : "Couldn't add — check your connection.";
+    msg.className = 'hub-msg err';
+  }finally{
+    btn.disabled = false;
+    btn.textContent = prevLabel;
+  }
+}
+
+function renderMaintList(){
+  const openC = document.getElementById('maintOpenContainer');
+  const doneC = document.getElementById('maintDoneContainer');
+  const status = hubStatusHtml();
+  if(status){
+    openC.innerHTML = status;
+    doneC.innerHTML = '';
+    document.getElementById('maintOpenCount').textContent = '0';
+    document.getElementById('maintDoneWrap').style.display = 'none';
+    return;
+  }
+  const items = hubData.maintenance;
+  const open = items.filter(it => (it.Status || 'Open') === 'Open');
+  const done = items.filter(it => (it.Status || 'Open') === 'Done');
+
+  document.getElementById('maintOpenCount').textContent = open.length;
+  document.getElementById('maintDoneCount').textContent = done.length;
+  document.getElementById('maintDoneWrap').style.display = done.length ? '' : 'none';
+
+  // Group open items by floor, in the order floors first appear.
+  const floorOrder = [];
+  const byFloor = {};
+  open.forEach(it => {
+    const f = (it.Floor || 'Other').trim() || 'Other';
+    if(!byFloor[f]){ byFloor[f] = []; floorOrder.push(f); }
+    byFloor[f].push(it);
+  });
+
+  openC.innerHTML = '';
+  if(open.length === 0){
+    openC.innerHTML = `<div class="hub-status">Nothing outstanding right now.</div>`;
+  } else {
+    floorOrder.forEach(f => {
+      const head = document.createElement('div');
+      head.className = 'hub-group-head';
+      head.textContent = f + ' · ' + byFloor[f].length;
+      openC.appendChild(head);
+      byFloor[f].forEach(it => openC.appendChild(renderMaintItem(it, false)));
+    });
+  }
+
+  doneC.innerHTML = '';
+  done.forEach(it => doneC.appendChild(renderMaintItem(it, true)));
+}
+
+function renderMaintItem(it, isDone){
+  const wrap = document.createElement('div');
+  wrap.className = 'hub-item' + (isDone ? ' done' : '');
+
+  const sub = document.createElement('div');
+  sub.className = 'hub-item-sub';
+  sub.textContent = [it.Area, it.Type].filter(Boolean).join(' · ') + (it.Timeframe ? ' · ' + it.Timeframe : '');
+  wrap.appendChild(sub);
+
+  const desc = document.createElement('input');
+  desc.type = 'text';
+  desc.className = 'hub-item-title';
+  desc.value = it.Description || '';
+  desc.oninput = () => debouncedFieldUpdate('maintenance', it.ID, 'description', desc.value);
+  wrap.appendChild(desc);
+
+  const comments = document.createElement('textarea');
+  comments.className = 'hub-item-notes';
+  comments.placeholder = 'Comments';
+  comments.value = it.Comments || '';
+  comments.oninput = () => debouncedFieldUpdate('maintenance', it.ID, 'comments', comments.value);
+  wrap.appendChild(comments);
+
+  const foot = document.createElement('div');
+  foot.className = 'hub-item-foot';
+
+  const doneBtn = document.createElement('button');
+  doneBtn.className = 'hub-chip' + (isDone ? '' : ' primary');
+  doneBtn.textContent = isDone ? 'Reopen' : 'Mark done';
+  doneBtn.onclick = () => resolveHubItem('maintenance', it.ID, !isDone);
+  foot.appendChild(doneBtn);
+
+  const addBtn = document.createElement('button');
+  addBtn.className = 'hub-chip ok';
+  addBtn.textContent = 'Add to rundown';
+  addBtn.onclick = () => addToRundown([it.Floor, it.Area, it.Description].filter(Boolean).join(' — '));
+  foot.appendChild(addBtn);
+
+  wrap.appendChild(foot);
+  return wrap;
+}
+
+/* ---------- shared hub helpers ---------- */
+
+function debouncedFieldUpdate(list, id, field, value){
+  const key = `${list}:${id}:${field}`;
+  clearTimeout(hubFieldTimers[key]);
+  hubFieldTimers[key] = setTimeout(() => {
+    fetch(WEEKLY_API_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'text/plain;charset=utf-8'},
+      body: JSON.stringify({ action:'updateField', list, id, field, value })
+    }).catch(() => {});
+  }, 500);
+}
+
+async function resolveHubItem(list, id, resolve){
+  try{
+    await fetch(WEEKLY_API_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'text/plain;charset=utf-8'},
+      body: JSON.stringify({ action: resolve ? 'resolve' : 'reopen', list, id })
+    });
+    await loadHubData();
+    showToast(resolve ? 'Marked done' : 'Reopened');
+  }catch(e){
+    showToast("Couldn't update — check your connection");
+  }
+}
+
+// Pushes a completed to-do or maintenance item straight into this week's
+// rundown, so finishing something off either list can go into the email
+// without retyping it.
+function addToRundown(text){
+  const val = (text || '').trim();
+  if(!val) return;
+  state.thisWeek.push(val);
+  saveState();
+  render();
+  showToast('Added to This week ✓');
+}
 
 render();
 </script>
